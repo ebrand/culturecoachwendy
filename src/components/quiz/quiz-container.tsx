@@ -336,7 +336,7 @@ function AuthScreen({ sessionId, onComplete, loading, buttonStyle, primaryColor 
 
     // Build the OAuth URL for Google via Stytch
     const publicToken = process.env.NEXT_PUBLIC_STYTCH_PUBLIC_TOKEN;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://wmb-coaching-quiz-production.up.railway.app');
     const callbackUrl = `${appUrl}/auth-complete`;
 
     // Use test.stytch.com for test tokens, api.stytch.com for live tokens
