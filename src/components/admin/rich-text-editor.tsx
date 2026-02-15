@@ -57,7 +57,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none min-h-[200px] p-3 focus:outline-none',
+        class: 'min-h-[200px] p-3 focus:outline-none',
       },
     },
   });
@@ -225,7 +225,30 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
       </div>
 
       {/* Editor */}
-      <EditorContent editor={editor} />
+      <style jsx global>{`
+        .tiptap-editor h1 { font-size: 1.75rem; font-weight: 700; margin: 0.5rem 0; }
+        .tiptap-editor h2 { font-size: 1.375rem; font-weight: 600; margin: 0.5rem 0; }
+        .tiptap-editor h3 { font-size: 1.125rem; font-weight: 600; margin: 0.5rem 0; }
+        .tiptap-editor p { margin: 0.5rem 0; }
+        .tiptap-editor ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
+        .tiptap-editor ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
+        .tiptap-editor li { margin: 0.25rem 0; }
+        .tiptap-editor a { color: #2563eb; text-decoration: underline; }
+        .tiptap-editor img { max-width: 100%; height: auto; margin: 0.5rem 0; border-radius: 0.375rem; }
+        .tiptap-editor blockquote { border-left: 3px solid #d1d5db; padding-left: 1rem; margin: 0.5rem 0; color: #6b7280; }
+        .tiptap-editor strong { font-weight: 600; }
+        .tiptap-editor em { font-style: italic; }
+        .tiptap-editor .is-editor-empty:first-child::before {
+          content: attr(data-placeholder);
+          color: #9ca3af;
+          pointer-events: none;
+          float: left;
+          height: 0;
+        }
+      `}</style>
+      <div className="tiptap-editor">
+        <EditorContent editor={editor} />
+      </div>
 
       {/* Hidden file input */}
       <input
