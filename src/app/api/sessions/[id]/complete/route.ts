@@ -27,15 +27,14 @@ export async function POST(
 
   const quizId = sessionData.quiz_id;
 
-  // Get all responses for this session with their weights
+  // Get all responses for this session with their result mappings
   const { data: responses, error: responsesError } = await supabase
     .from('quiz_responses')
     .select(`
       answer_id,
       answer:answers(
         answer_result_weights(
-          result_id,
-          weight
+          result_id
         )
       )
     `)
@@ -45,47 +44,55 @@ export async function POST(
     return NextResponse.json({ error: responsesError.message }, { status: 500 });
   }
 
-  // Calculate total score by summing all weights
-  // Each answer contributes its weight (default 1.0 = 1 point)
-  let totalScore = 0;
+  // Count votes per result
+  const resultVotes: Record<string, number> = {};
 
   responses?.forEach((response) => {
-    const answer = response.answer as unknown as { answer_result_weights: { result_id: string; weight: number }[] } | null;
+    const answer = response.answer as unknown as { answer_result_weights: { result_id: string }[] } | null;
     const weights = answer?.answer_result_weights || [];
     weights.forEach((w) => {
-      totalScore += w.weight;
+      resultVotes[w.result_id] = (resultVotes[w.result_id] || 0) + 1;
     });
   });
 
-  console.log('Quiz completion - Total score:', totalScore);
+  console.log('Quiz completion - Result votes:', resultVotes);
 
-  // Get all results for this quiz, ordered by min_score descending
-  // We want to find the result with the highest min_score that is <= totalScore
-  const { data: quizResults, error: resultsError } = await supabase
-    .from('quiz_results')
-    .select('*')
-    .eq('quiz_id', quizId)
-    .order('min_score', { ascending: false });
+  // Find the result with the most votes
+  let maxVotes = 0;
+  let winningResultId: string | null = null;
 
-  if (resultsError) {
-    return NextResponse.json({ error: resultsError.message }, { status: 500 });
+  Object.entries(resultVotes).forEach(([resultId, votes]) => {
+    if (votes > maxVotes) {
+      maxVotes = votes;
+      winningResultId = resultId;
+    }
+  });
+
+  // Get the winning result details
+  let primaryResult = null;
+  if (winningResultId) {
+    const { data: result } = await supabase
+      .from('quiz_results')
+      .select('*')
+      .eq('id', winningResultId)
+      .single();
+    primaryResult = result;
   }
 
-  // Find the matching result (highest min_score that is <= totalScore)
-  let primaryResult = null;
-  for (const result of quizResults || []) {
-    if (result.min_score <= totalScore) {
-      primaryResult = result;
-      break;
+  // Fallback to first result if no votes (shouldn't happen)
+  if (!primaryResult) {
+    const { data: fallbackResults } = await supabase
+      .from('quiz_results')
+      .select('*')
+      .eq('quiz_id', quizId)
+      .order('display_order')
+      .limit(1);
+    if (fallbackResults && fallbackResults.length > 0) {
+      primaryResult = fallbackResults[0];
     }
   }
 
-  // Fallback to the result with lowest min_score if none match
-  if (!primaryResult && quizResults && quizResults.length > 0) {
-    primaryResult = quizResults[quizResults.length - 1];
-  }
-
-  console.log('Matched result:', primaryResult?.title, 'with min_score:', primaryResult?.min_score);
+  console.log('Winning result:', primaryResult?.title, 'with votes:', maxVotes);
 
   // Delete existing session results
   await supabase
@@ -100,7 +107,7 @@ export async function POST(
       .insert({
         session_id: sessionId,
         result_id: primaryResult.id,
-        score: totalScore,
+        score: maxVotes,
         is_primary: true,
       });
 
@@ -118,7 +125,7 @@ export async function POST(
     .update({
       status: 'completed',
       completed_at: new Date().toISOString(),
-      lead_score: totalScore,
+      lead_score: maxVotes,
       is_lead: isLead,
     })
     .eq('id', sessionId)
@@ -176,7 +183,7 @@ export async function POST(
 
   return NextResponse.json({
     session,
-    totalScore,
+    resultVotes,
     primaryResult,
     isLead,
     emailSent,

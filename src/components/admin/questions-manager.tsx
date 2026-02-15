@@ -290,11 +290,15 @@ function AnswersManager({ questionId, answers, results }: AnswersManagerProps) {
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
   const [newAnswerText, setNewAnswerText] = useState('');
-  const [newAnswerIsCorrect, setNewAnswerIsCorrect] = useState(false);
+  const [newAnswerResultId, setNewAnswerResultId] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleCreateAnswer = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newAnswerResultId) {
+      alert('Please select which result this answer maps to');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -313,21 +317,19 @@ function AnswersManager({ questionId, answers, results }: AnswersManagerProps) {
 
       const newAnswer = await answerResponse.json();
 
-      // Only create a weight if this is a correct answer (worth 1 point)
-      if (newAnswerIsCorrect && results.length > 0) {
-        await fetch('/api/answer-weights', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            answer_id: newAnswer.id,
-            result_id: results[0].id, // Use first result as placeholder
-            weight: 1,
-          }),
-        });
-      }
+      // Create the result association
+      await fetch('/api/answer-weights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          answer_id: newAnswer.id,
+          result_id: newAnswerResultId,
+          weight: 1,
+        }),
+      });
 
       setNewAnswerText('');
-      setNewAnswerIsCorrect(false);
+      setNewAnswerResultId('');
       setIsCreating(false);
       router.refresh();
     } catch (error) {
@@ -377,18 +379,23 @@ function AnswersManager({ questionId, answers, results }: AnswersManagerProps) {
               required
             />
           </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="new-answer-correct"
-              checked={newAnswerIsCorrect}
-              onCheckedChange={(checked) => setNewAnswerIsCorrect(checked === true)}
-            />
-            <Label htmlFor="new-answer-correct" className="text-sm cursor-pointer">
-              Correct answer (worth 1 point)
-            </Label>
+          <div className="space-y-2">
+            <Label className="text-sm">Maps to Result</Label>
+            <Select value={newAnswerResultId} onValueChange={setNewAnswerResultId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a result..." />
+              </SelectTrigger>
+              <SelectContent>
+                {results.map((result) => (
+                  <SelectItem key={result.id} value={result.id}>
+                    {result.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex gap-2">
-            <Button type="submit" size="sm" disabled={loading}>
+            <Button type="submit" size="sm" disabled={loading || !newAnswerResultId}>
               {loading ? 'Adding...' : 'Add Answer'}
             </Button>
             <Button
@@ -398,7 +405,7 @@ function AnswersManager({ questionId, answers, results }: AnswersManagerProps) {
               onClick={() => {
                 setIsCreating(false);
                 setNewAnswerText('');
-                setNewAnswerIsCorrect(false);
+                setNewAnswerResultId('');
               }}
             >
               Cancel
@@ -427,7 +434,7 @@ function AnswersManager({ questionId, answers, results }: AnswersManagerProps) {
   );
 }
 
-// Single Answer Row with correct/incorrect toggle
+// Single Answer Row with result mapping
 interface AnswerRowProps {
   answer: Answer & { answer_result_weights: AnswerResultWeight[] };
   results: QuizResult[];
@@ -436,64 +443,64 @@ interface AnswerRowProps {
 
 function AnswerRow({ answer, results, onDelete }: AnswerRowProps) {
   const router = useRouter();
-
-  // Answer is "correct" if it has any weight assigned
-  const hasWeight = answer.answer_result_weights.length > 0;
-  const [isCorrect, setIsCorrect] = useState(hasWeight);
+  const currentWeight = answer.answer_result_weights[0];
+  const [selectedResultId, setSelectedResultId] = useState(currentWeight?.result_id || '');
   const [loading, setLoading] = useState(false);
 
-  const handleCorrectToggle = async (checked: boolean) => {
+  const selectedResult = results.find(r => r.id === selectedResultId);
+
+  const handleResultChange = async (newResultId: string) => {
     setLoading(true);
-    setIsCorrect(checked);
+    const oldResultId = selectedResultId;
+    setSelectedResultId(newResultId);
 
     try {
-      if (checked) {
-        // Add weight (make it worth 1 point)
-        if (results.length > 0) {
-          await fetch('/api/answer-weights', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              answer_id: answer.id,
-              result_id: results[0].id,
-              weight: 1,
-            }),
-          });
-        }
-      } else {
-        // Remove all weights for this answer
-        for (const weight of answer.answer_result_weights) {
-          await fetch(`/api/answer-weights?answer_id=${answer.id}&result_id=${weight.result_id}`, {
-            method: 'DELETE',
-          });
-        }
+      // Remove old weight if exists
+      if (currentWeight) {
+        await fetch(`/api/answer-weights?answer_id=${answer.id}&result_id=${currentWeight.result_id}`, {
+          method: 'DELETE',
+        });
       }
+
+      // Add new weight
+      await fetch('/api/answer-weights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          answer_id: answer.id,
+          result_id: newResultId,
+          weight: 1,
+        }),
+      });
+
       router.refresh();
     } catch (error) {
       console.error('Error updating answer:', error);
-      setIsCorrect(!checked); // Revert on error
+      setSelectedResultId(oldResultId); // Revert on error
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={`border rounded-lg p-3 ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-white'}`}>
+    <div className="border rounded-lg p-3 bg-white">
       <div className="flex items-center gap-3">
-        <Checkbox
-          checked={isCorrect}
-          onCheckedChange={(checked) => handleCorrectToggle(checked === true)}
-          disabled={loading}
-        />
         <div className="flex-1 min-w-0">
-          <p className={`font-medium truncate ${isCorrect ? 'text-green-800' : ''}`}>
-            {answer.answer_text}
-          </p>
+          <p className="font-medium truncate">{answer.answer_text}</p>
         </div>
         <div className="flex items-center gap-2">
-          {isCorrect && (
-            <span className="text-xs text-green-600 font-medium">+1 point</span>
-          )}
+          <Select value={selectedResultId} onValueChange={handleResultChange} disabled={loading}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Select result..." />
+            </SelectTrigger>
+            <SelectContent>
+              {results.map((result) => (
+                <SelectItem key={result.id} value={result.id}>
+                  {result.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button variant="ghost" size="sm" className="text-destructive" onClick={onDelete}>
             <Trash2 className="w-3 h-3" />
           </Button>
