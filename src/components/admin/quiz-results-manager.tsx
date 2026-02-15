@@ -136,105 +136,6 @@ export function QuizResultsManager({ quizId, results, questionCount }: QuizResul
     });
   };
 
-  const ResultForm = ({ onSubmit, submitLabel }: { onSubmit: (e: React.FormEvent) => void; submitLabel: string }) => (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="grid grid-cols-3 gap-4">
-        <div className="col-span-2 space-y-2">
-          <Label htmlFor="result-title">Title</Label>
-          <Input
-            id="result-title"
-            value={formData.title}
-            onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-            placeholder="e.g., You're a Natural Leader"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="result-min-score">Min Score</Label>
-          <Select
-            value={formData.min_score.toString()}
-            onValueChange={(value) => setFormData((prev) => ({ ...prev, min_score: parseInt(value) }))}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select..." />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: questionCount + 1 }, (_, i) => (
-                <SelectItem key={i} value={i.toString()}>
-                  {i} {i === 1 ? 'point' : 'points'}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground">
-            Min score for this result
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="result-description">Description (shown on results page)</Label>
-        <Textarea
-          id="result-description"
-          value={formData.description}
-          onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-          placeholder="Brief description shown immediately after quiz completion..."
-          rows={3}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="result-image">Image URL (optional)</Label>
-        <Input
-          id="result-image"
-          value={formData.image_url}
-          onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
-          placeholder="https://..."
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="result-email-content">
-          Email Content (HTML)
-          <span className="text-muted-foreground font-normal ml-2">- sent to user after completion</span>
-        </Label>
-        <Textarea
-          id="result-email-content"
-          value={formData.email_content}
-          onChange={(e) => setFormData((prev) => ({ ...prev, email_content: e.target.value }))}
-          placeholder="<h1>Congratulations!</h1><p>Here are your detailed results...</p>"
-          rows={8}
-          className="font-mono text-sm"
-        />
-        <p className="text-xs text-muted-foreground">
-          Use HTML to format the email body. This will be sent to users who complete the quiz with this result.
-        </p>
-      </div>
-
-      <div className="flex items-center space-x-2 pt-2 pb-2 border-t border-b">
-        <Checkbox
-          id="result-is-lead"
-          checked={formData.is_lead}
-          onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, is_lead: checked === true }))}
-        />
-        <Label htmlFor="result-is-lead" className="flex items-center gap-2 cursor-pointer">
-          <Star className="w-4 h-4 text-yellow-500" />
-          Mark as Lead
-          <span className="text-muted-foreground font-normal">- users with this result are flagged as leads</span>
-        </Label>
-      </div>
-
-      <div className="flex gap-2">
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Saving...' : submitLabel}
-        </Button>
-        <Button type="button" variant="outline" onClick={resetForm}>
-          Cancel
-        </Button>
-      </div>
-    </form>
-  );
-
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -257,7 +158,102 @@ export function QuizResultsManager({ quizId, results, questionCount }: QuizResul
             <DialogHeader>
               <DialogTitle>Add New Result</DialogTitle>
             </DialogHeader>
-            <ResultForm onSubmit={handleCreate} submitLabel="Create Result" />
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="create-result-title">Title</Label>
+                  <Input
+                    id="create-result-title"
+                    value={formData.title}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                    placeholder="e.g., You're a Natural Leader"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="create-result-min-score">Min Score</Label>
+                  <Select
+                    value={formData.min_score.toString()}
+                    onValueChange={(value) => setFormData((prev) => ({ ...prev, min_score: parseInt(value) }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: questionCount + 1 }, (_, i) => (
+                        <SelectItem key={i} value={i.toString()}>
+                          {i} {i === 1 ? 'point' : 'points'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Min score for this result
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="create-result-description">Description (shown on results page)</Label>
+                <Textarea
+                  id="create-result-description"
+                  value={formData.description}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                  placeholder="Brief description shown immediately after quiz completion..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="create-result-image">Image URL (optional)</Label>
+                <Input
+                  id="create-result-image"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="create-result-email-content">
+                  Email Content (HTML)
+                  <span className="text-muted-foreground font-normal ml-2">- sent to user after completion</span>
+                </Label>
+                <Textarea
+                  id="create-result-email-content"
+                  value={formData.email_content}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, email_content: e.target.value }))}
+                  placeholder="<h1>Congratulations!</h1><p>Here are your detailed results...</p>"
+                  rows={8}
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Use HTML to format the email body. This will be sent to users who complete the quiz with this result.
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-2 pt-2 pb-2 border-t border-b">
+                <Checkbox
+                  id="create-result-is-lead"
+                  checked={formData.is_lead}
+                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, is_lead: checked === true }))}
+                />
+                <Label htmlFor="create-result-is-lead" className="flex items-center gap-2 cursor-pointer">
+                  <Star className="w-4 h-4 text-yellow-500" />
+                  Mark as Lead
+                  <span className="text-muted-foreground font-normal">- users with this result are flagged as leads</span>
+                </Label>
+              </div>
+
+              <div className="flex gap-2">
+                <Button type="submit" disabled={loading}>
+                  {loading ? 'Saving...' : 'Create Result'}
+                </Button>
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
       </CardHeader>
@@ -319,7 +315,102 @@ export function QuizResultsManager({ quizId, results, questionCount }: QuizResul
                       <DialogHeader>
                         <DialogTitle>Edit Result</DialogTitle>
                       </DialogHeader>
-                      <ResultForm onSubmit={handleUpdate} submitLabel="Save Changes" />
+                      <form onSubmit={handleUpdate} className="space-y-4">
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="col-span-2 space-y-2">
+                            <Label htmlFor="edit-result-title">Title</Label>
+                            <Input
+                              id="edit-result-title"
+                              value={formData.title}
+                              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                              placeholder="e.g., You're a Natural Leader"
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-result-min-score">Min Score</Label>
+                            <Select
+                              value={formData.min_score.toString()}
+                              onValueChange={(value) => setFormData((prev) => ({ ...prev, min_score: parseInt(value) }))}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: questionCount + 1 }, (_, i) => (
+                                  <SelectItem key={i} value={i.toString()}>
+                                    {i} {i === 1 ? 'point' : 'points'}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">
+                              Min score for this result
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-result-description">Description (shown on results page)</Label>
+                          <Textarea
+                            id="edit-result-description"
+                            value={formData.description}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                            placeholder="Brief description shown immediately after quiz completion..."
+                            rows={3}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-result-image">Image URL (optional)</Label>
+                          <Input
+                            id="edit-result-image"
+                            value={formData.image_url}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
+                            placeholder="https://..."
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-result-email-content">
+                            Email Content (HTML)
+                            <span className="text-muted-foreground font-normal ml-2">- sent to user after completion</span>
+                          </Label>
+                          <Textarea
+                            id="edit-result-email-content"
+                            value={formData.email_content}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, email_content: e.target.value }))}
+                            placeholder="<h1>Congratulations!</h1><p>Here are your detailed results...</p>"
+                            rows={8}
+                            className="font-mono text-sm"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Use HTML to format the email body. This will be sent to users who complete the quiz with this result.
+                          </p>
+                        </div>
+
+                        <div className="flex items-center space-x-2 pt-2 pb-2 border-t border-b">
+                          <Checkbox
+                            id="edit-result-is-lead"
+                            checked={formData.is_lead}
+                            onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, is_lead: checked === true }))}
+                          />
+                          <Label htmlFor="edit-result-is-lead" className="flex items-center gap-2 cursor-pointer">
+                            <Star className="w-4 h-4 text-yellow-500" />
+                            Mark as Lead
+                            <span className="text-muted-foreground font-normal">- users with this result are flagged as leads</span>
+                          </Label>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button type="submit" disabled={loading}>
+                            {loading ? 'Saving...' : 'Save Changes'}
+                          </Button>
+                          <Button type="button" variant="outline" onClick={resetForm}>
+                            Cancel
+                          </Button>
+                        </div>
+                      </form>
                     </DialogContent>
                   </Dialog>
                   <Button
