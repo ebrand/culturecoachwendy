@@ -24,6 +24,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2, GripVertical, Star, Mail } from 'lucide-react';
+import { RichTextEditor } from './rich-text-editor';
 import type { QuizResult } from '@/types/database';
 
 interface QuizResultsManagerProps {
@@ -215,20 +216,17 @@ export function QuizResultsManager({ quizId, results, questionCount }: QuizResul
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="create-result-email-content">
-                  Email Content (HTML)
+                <Label>
+                  Email Content
                   <span className="text-muted-foreground font-normal ml-2">- sent to user after completion</span>
                 </Label>
-                <Textarea
-                  id="create-result-email-content"
+                <RichTextEditor
                   value={formData.email_content}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, email_content: e.target.value }))}
-                  placeholder="<h1>Congratulations!</h1><p>Here are your detailed results...</p>"
-                  rows={8}
-                  className="font-mono text-sm"
+                  onChange={(html) => setFormData((prev) => ({ ...prev, email_content: html }))}
+                  placeholder="Write your email content here..."
                 />
                 <p className="text-xs text-muted-foreground">
-                  Use HTML to format the email body. This will be sent to users who complete the quiz with this result.
+                  Use the toolbar to format text and add images. This will be sent to users who complete the quiz with this result.
                 </p>
               </div>
 
@@ -372,20 +370,17 @@ export function QuizResultsManager({ quizId, results, questionCount }: QuizResul
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="edit-result-email-content">
-                            Email Content (HTML)
+                          <Label>
+                            Email Content
                             <span className="text-muted-foreground font-normal ml-2">- sent to user after completion</span>
                           </Label>
-                          <Textarea
-                            id="edit-result-email-content"
+                          <RichTextEditor
                             value={formData.email_content}
-                            onChange={(e) => setFormData((prev) => ({ ...prev, email_content: e.target.value }))}
-                            placeholder="<h1>Congratulations!</h1><p>Here are your detailed results...</p>"
-                            rows={8}
-                            className="font-mono text-sm"
+                            onChange={(html) => setFormData((prev) => ({ ...prev, email_content: html }))}
+                            placeholder="Write your email content here..."
                           />
                           <p className="text-xs text-muted-foreground">
-                            Use HTML to format the email body. This will be sent to users who complete the quiz with this result.
+                            Use the toolbar to format text and add images. This will be sent to users who complete the quiz with this result.
                           </p>
                         </div>
 
