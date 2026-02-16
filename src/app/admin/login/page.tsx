@@ -8,10 +8,13 @@ function LoginContent() {
   const error = searchParams.get('error');
 
   const publicToken = process.env.NEXT_PUBLIC_STYTCH_PUBLIC_TOKEN;
-  const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (typeof window !== 'undefined' ? window.location.origin : '');
-  const callbackUrl = `${appUrl}/api/admin/auth/callback`;
+
+  // Use window.location.origin so the callback always points to the current
+  // host — avoids NEXT_PUBLIC_APP_URL being baked to localhost at build time.
+  const callbackUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/api/admin/auth/callback`
+      : '';
 
   const isTestEnv = publicToken?.includes('-test-');
   const stytchBaseUrl = isTestEnv
