@@ -143,19 +143,30 @@ export async function POST(
   let emailSent = false;
   let emailError: string | null = null;
 
-  console.log('Email check:', {
-    hasUser: !!user,
-    userEmail: user?.email,
-    hasPrimaryResult: !!primaryResult,
+  const emailDebug = {
     hasResendKey: !!process.env.RESEND_API_KEY,
-  });
+    resendKeyPrefix: process.env.RESEND_API_KEY?.substring(0, 8) || 'NOT SET',
+    hasUser: !!user,
+    userEmail: user?.email || null,
+    userName: user?.name || null,
+    sessionUserId: sessionData.user_id || null,
+    hasPrimaryResult: !!primaryResult,
+    primaryResultTitle: primaryResult?.title || null,
+    fromEmail: process.env.RESEND_FROM_EMAIL || 'noreply@resend.dev',
+    skippedReason: null as string | null,
+  };
+
+  console.log('Email debug:', JSON.stringify(emailDebug));
 
   if (!process.env.RESEND_API_KEY) {
-    console.warn('RESEND_API_KEY not configured - skipping email');
+    emailDebug.skippedReason = 'RESEND_API_KEY not configured';
+    console.warn(emailDebug.skippedReason);
   } else if (!user?.email) {
-    console.log('No user email - skipping email (user may have skipped auth)');
+    emailDebug.skippedReason = 'No user email (user may have skipped auth or user record has no email)';
+    console.log(emailDebug.skippedReason);
   } else if (!primaryResult) {
-    console.log('No primary result - skipping email');
+    emailDebug.skippedReason = 'No primary result found';
+    console.log(emailDebug.skippedReason);
   } else {
     try {
       console.log('Sending result email to:', user.email);
@@ -188,5 +199,6 @@ export async function POST(
     isLead,
     emailSent,
     emailError,
+    emailDebug,
   });
 }
