@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { withAdminAuth } from '@/lib/auth/admin';
 import type { CreateQuiz } from '@/types/database';
 
 // GET /api/quizzes - List all quizzes
-export async function GET() {
+export const GET = withAdminAuth(async () => {
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
@@ -20,10 +21,10 @@ export async function GET() {
   }
 
   return NextResponse.json(data);
-}
+});
 
 // POST /api/quizzes - Create a new quiz
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request: NextRequest) => {
   const supabase = createAdminClient();
   const body: CreateQuiz = await request.json();
 
@@ -52,4 +53,4 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json(data, { status: 201 });
-}
+});

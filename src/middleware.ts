@@ -1,41 +1,77 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
-  // Check if this is an admin route
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    // Try to get key from multiple sources
-    const url = new URL(request.url);
-    const adminKey = url.searchParams.get('key') ||
-                     request.headers.get('x-admin-key') ||
-                     request.cookies.get('admin_key')?.value;
+const COOKIE_NAME = 'stytch_session_token';
 
-    const validAdminKey = process.env.ADMIN_SECRET_KEY;
+// Public API prefixes that never require admin auth
+const PUBLIC_API_PREFIXES = [
+  '/api/sessions',
+  '/api/auth',
+  '/api/admin/auth',
+];
 
-    // If admin key is provided and valid, set a cookie and continue
-    if (adminKey && validAdminKey && adminKey === validAdminKey) {
-      const response = NextResponse.next();
-
-      // Set cookie for future requests (so user doesn't need key in URL every time)
-      if (!request.cookies.get('admin_key')?.value) {
-        response.cookies.set('admin_key', adminKey, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 7, // 1 week
-        });
-      }
-
-      return response;
-    }
-
-    // No valid admin key - show unauthorized
-    return new NextResponse('Unauthorized', { status: 401 });
+function isPublicRoute(pathname: string): boolean {
+  // Static/internal Next.js routes
+  if (pathname.startsWith('/_next') || pathname.startsWith('/favicon')) {
+    return true;
   }
 
+  // Public pages
+  if (pathname === '/' || pathname.startsWith('/q/') || pathname === '/auth-complete' || pathname === '/auth-error') {
+    return true;
+  }
+
+  // Admin login page is public
+  if (pathname === '/admin/login') {
+    return true;
+  }
+
+  // Public API routes
+  if (PUBLIC_API_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    return true;
+  }
+
+  return false;
+}
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (isPublicRoute(pathname)) {
+    return NextResponse.next();
+  }
+
+  // Everything below requires admin auth
+  const hasSession = request.cookies.has(COOKIE_NAME);
+
+  if (!hasSession) {
+    // API routes get a 401 JSON response
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Page routes redirect to login
+    return NextResponse.redirect(new URL('/admin/login', request.url));
+  }
+
+  // Cookie exists — let the request through.
+  // Real validation happens in withAdminAuth (API) or requireAdminPage (pages).
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin', '/admin/:path*'],
+  matcher: [
+    '/admin',
+    '/admin/:path*',
+    '/api/quizzes/:path*',
+    '/api/questions/:path*',
+    '/api/answers/:path*',
+    '/api/quiz-results/:path*',
+    '/api/answer-weights/:path*',
+    '/api/analytics/:path*',
+    '/api/upload/:path*',
+  ],
 };

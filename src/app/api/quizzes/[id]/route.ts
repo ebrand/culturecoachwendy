@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { withAdminAuth } from '@/lib/auth/admin';
 import type { UpdateQuiz } from '@/types/database';
 
 // GET /api/quizzes/[id] - Get a single quiz with all relations
-export async function GET(
+export const GET = withAdminAuth(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
   const supabase = createAdminClient();
 
@@ -42,13 +43,13 @@ export async function GET(
   }
 
   return NextResponse.json(data);
-}
+});
 
 // PATCH /api/quizzes/[id] - Update a quiz
-export async function PATCH(
+export const PATCH = withAdminAuth(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
   const supabase = createAdminClient();
   const body: UpdateQuiz = await request.json();
@@ -65,13 +66,13 @@ export async function PATCH(
   }
 
   return NextResponse.json(data);
-}
+});
 
 // DELETE /api/quizzes/[id] - Delete a quiz
-export async function DELETE(
+export const DELETE = withAdminAuth(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
   const supabase = createAdminClient();
 
@@ -85,4 +86,4 @@ export async function DELETE(
   }
 
   return NextResponse.json({ success: true });
-}
+});

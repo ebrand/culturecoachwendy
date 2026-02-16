@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, BarChart3, Trash2 } from 'lucide-react';
+import { Plus, Edit, BarChart3, ExternalLink } from 'lucide-react';
 import { DeleteQuizButton } from '@/components/admin/delete-quiz-button';
 
 export default async function QuizzesPage() {
@@ -86,6 +86,11 @@ export default async function QuizzesPage() {
                           <BarChart3 className="w-4 h-4" />
                         </Button>
                       </Link>
+                      <a href={`/q/${quiz.slug}`} target="_blank" rel="noopener noreferrer">
+                        <Button variant="ghost" size="sm">
+                          <ExternalLink className="w-4 h-4" />
+                        </Button>
+                      </a>
                       <DeleteQuizButton quizId={quiz.id} quizTitle={quiz.title} />
                     </div>
                   </TableCell>

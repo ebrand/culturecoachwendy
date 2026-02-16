@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { withAdminAuth } from '@/lib/auth/admin';
 
 // POST /api/quiz-results - Create a new quiz result
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request: NextRequest) => {
   const supabase = createAdminClient();
   const body = await request.json();
 
@@ -23,4 +24,4 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json(data, { status: 201 });
-}
+});

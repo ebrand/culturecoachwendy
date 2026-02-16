@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { withAdminAuth } from '@/lib/auth/admin';
 
 // GET /api/analytics?quiz_id=... - Get analytics for a quiz
-export async function GET(request: NextRequest) {
+export const GET = withAdminAuth(async (request: NextRequest) => {
   const supabase = createAdminClient();
   const { searchParams } = new URL(request.url);
   const quizId = searchParams.get('quiz_id');
@@ -70,15 +71,6 @@ export async function GET(request: NextRequest) {
     }));
 
     // Get result distribution
-    const { data: results } = await supabase
-      .from('session_results')
-      .select(`
-        result_id,
-        quiz_result:quiz_results(title)
-      `)
-      .eq('is_primary', true);
-
-    // Filter to only include results for this quiz's sessions
     const { data: quizSessionIds } = await supabase
       .from('quiz_sessions')
       .select('id')
@@ -126,4 +118,4 @@ export async function GET(request: NextRequest) {
     console.error('Analytics error:', error);
     return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 });
   }
-}
+});

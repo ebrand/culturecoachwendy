@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { withAdminAuth } from '@/lib/auth/admin';
 
 // PUT /api/questions/reorder - Update display_order for questions
-export async function PUT(request: NextRequest) {
+export const PUT = withAdminAuth(async (request: NextRequest) => {
   const supabase = createAdminClient();
   const { orderedIds } = await request.json();
 
@@ -25,4 +26,4 @@ export async function PUT(request: NextRequest) {
   }
 
   return NextResponse.json({ success: true });
-}
+});

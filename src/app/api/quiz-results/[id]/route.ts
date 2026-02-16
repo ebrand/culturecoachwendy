@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { withAdminAuth } from '@/lib/auth/admin';
 
 // PATCH /api/quiz-results/[id] - Update a quiz result
-export async function PATCH(
+export const PATCH = withAdminAuth(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
   const supabase = createAdminClient();
   const body = await request.json();
@@ -22,13 +23,13 @@ export async function PATCH(
   }
 
   return NextResponse.json(data);
-}
+});
 
 // DELETE /api/quiz-results/[id] - Delete a quiz result
-export async function DELETE(
+export const DELETE = withAdminAuth(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
   const supabase = createAdminClient();
 
@@ -42,4 +43,4 @@ export async function DELETE(
   }
 
   return NextResponse.json({ success: true });
-}
+});
