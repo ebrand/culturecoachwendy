@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { ExternalLink } from 'lucide-react';
 import { EmbedCodeGenerator } from '@/components/admin/embed-code-generator';
 import type { Quiz, QuizSettings } from '@/types/database';
 
@@ -246,14 +247,26 @@ export function QuizSettingsForm({ quiz }: QuizSettingsFormProps) {
                 {formData.is_published ? 'Published' : 'Draft'}
               </Badge>
             </div>
-            <Button
-              type="button"
-              variant={formData.is_published ? 'outline' : 'default'}
-              onClick={togglePublish}
-              disabled={loading}
-            >
-              {formData.is_published ? 'Unpublish' : 'Publish Quiz'}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={formData.is_published ? 'outline' : 'default'}
+                onClick={togglePublish}
+                disabled={loading}
+              >
+                {formData.is_published ? 'Unpublish' : 'Publish Quiz'}
+              </Button>
+              {formData.is_published && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => window.open(`/q/${formData.slug}`, '_blank')}
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Open Quiz
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

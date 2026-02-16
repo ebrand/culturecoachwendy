@@ -155,7 +155,7 @@ export function QuizResultsManager({ quizId, results, questionCount }: QuizResul
               Add Result
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Result</DialogTitle>
             </DialogHeader>
@@ -309,7 +309,7 @@ export function QuizResultsManager({ quizId, results, questionCount }: QuizResul
                         <Edit className="w-4 h-4" />
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>Edit Result</DialogTitle>
                       </DialogHeader>
