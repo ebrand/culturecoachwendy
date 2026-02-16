@@ -11,7 +11,6 @@ function AuthCompleteContent() {
   const tokenType = searchParams.get('stytch_token_type');
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [result, setResult] = useState<{ title: string; description: string | null } | null>(null);
-  const [emailDebugInfo, setEmailDebugInfo] = useState<Record<string, unknown> | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -93,13 +92,7 @@ function AuthCompleteContent() {
         if (!response.ok) throw new Error('Failed to complete quiz');
 
         const data = await response.json();
-        console.log('[Auth Complete] Response:', JSON.stringify({
-          emailSent: data.emailSent,
-          emailError: data.emailError,
-          emailDebug: data.emailDebug,
-        }));
         setResult(data.primaryResult);
-        setEmailDebugInfo({ emailSent: data.emailSent, emailError: data.emailError, ...data.emailDebug });
         setStatus('success');
 
         // Post message to parent window if in iframe
@@ -137,13 +130,6 @@ function AuthCompleteContent() {
               {result.description && (
                 <p className="text-muted-foreground">{result.description}</p>
               )}
-              {/* DEBUG: Email status — remove after debugging */}
-              {emailDebugInfo && (
-                <div className="mt-4 p-3 bg-neutral-100 border rounded text-left text-xs font-mono">
-                  <p className="font-bold text-neutral-500 mb-1">DEBUG: Email Status</p>
-                  <pre className="text-neutral-600 whitespace-pre-wrap">{JSON.stringify(emailDebugInfo, null, 2)}</pre>
-                </div>
-              )}
             </div>
           )}
 
@@ -151,13 +137,6 @@ function AuthCompleteContent() {
             <div className="space-y-4">
               <h2 className="text-xl font-bold">Quiz Completed!</h2>
               <p className="text-muted-foreground">Thanks for taking the quiz.</p>
-              {/* DEBUG: Email status — remove after debugging */}
-              {emailDebugInfo && (
-                <div className="mt-4 p-3 bg-neutral-100 border rounded text-left text-xs font-mono">
-                  <p className="font-bold text-neutral-500 mb-1">DEBUG: Email Status</p>
-                  <pre className="text-neutral-600 whitespace-pre-wrap">{JSON.stringify(emailDebugInfo, null, 2)}</pre>
-                </div>
-              )}
             </div>
           )}
 

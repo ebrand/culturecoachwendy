@@ -199,6 +199,5 @@ export async function POST(
     isLead,
     emailSent,
     emailError,
-    emailDebug,
   });
 }

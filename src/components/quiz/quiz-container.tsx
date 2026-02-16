@@ -25,9 +25,6 @@ interface SessionResult {
   session: { id: string };
   primaryResult: QuizResult | null;
   scores: Record<string, number>;
-  emailSent?: boolean;
-  emailError?: string | null;
-  emailDebug?: Record<string, unknown>;
 }
 
 export function QuizContainer({ quiz }: QuizContainerProps) {
@@ -133,12 +130,6 @@ export function QuizContainer({ quiz }: QuizContainerProps) {
       if (!response.ok) throw new Error('Failed to complete quiz');
 
       const data = await response.json();
-      console.log('[Quiz Complete] Response:', JSON.stringify({
-        emailSent: data.emailSent,
-        emailError: data.emailError,
-        emailDebug: data.emailDebug,
-        primaryResult: data.primaryResult?.title,
-      }));
       setResult(data);
       setState('results');
     } catch (error) {
@@ -204,9 +195,6 @@ export function QuizContainer({ quiz }: QuizContainerProps) {
           {state === 'results' && result && (
             <ResultScreen
               result={result.primaryResult}
-              emailSent={result.emailSent}
-              emailError={result.emailError}
-              emailDebug={result.emailDebug}
               buttonStyle={buttonStyle}
               primaryColor={settings.primaryColor}
             />
@@ -417,14 +405,11 @@ function AuthScreen({ sessionId, onComplete, loading, buttonStyle, primaryColor 
 
 interface ResultScreenProps {
   result: QuizResult | null;
-  emailSent?: boolean;
-  emailError?: string | null;
-  emailDebug?: Record<string, unknown>;
   buttonStyle: string;
   primaryColor: string;
 }
 
-function ResultScreen({ result, emailSent, emailError, emailDebug, buttonStyle, primaryColor }: ResultScreenProps) {
+function ResultScreen({ result, buttonStyle, primaryColor }: ResultScreenProps) {
   if (!result) {
     return (
       <div className="text-center space-y-4">
@@ -457,16 +442,6 @@ function ResultScreen({ result, emailSent, emailError, emailDebug, buttonStyle, 
       >
         Take Quiz Again
       </Button>
-
-      {/* DEBUG: Email status — remove after debugging */}
-      <div className="mt-6 p-3 bg-neutral-100 border rounded text-left text-xs font-mono space-y-1">
-        <p className="font-bold text-neutral-500">DEBUG: Email Status</p>
-        <p>emailSent: <span className={emailSent ? 'text-green-600' : 'text-red-600'}>{String(emailSent ?? 'undefined')}</span></p>
-        {emailError && <p>emailError: <span className="text-red-600">{emailError}</span></p>}
-        {emailDebug && (
-          <pre className="text-neutral-600 whitespace-pre-wrap">{JSON.stringify(emailDebug, null, 2)}</pre>
-        )}
-      </div>
     </div>
   );
 }
