@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Suspense } from 'react';
@@ -9,20 +9,23 @@ function AuthCompleteContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const tokenType = searchParams.get('stytch_token_type');
+  const urlUserId = searchParams.get('user_id');
+  const urlSessionId = searchParams.get('session_id');
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [result, setResult] = useState<{ title: string; description: string | null } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const hasRun = useRef(false);
 
   useEffect(() => {
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     async function processAuth() {
       // Get session_id from localStorage (stored before OAuth redirect)
       const sessionId = localStorage.getItem('quiz_session_id');
 
       // If no token, check if we have user_id/session_id from old flow
       if (!token) {
-        const urlUserId = searchParams.get('user_id');
-        const urlSessionId = searchParams.get('session_id');
-
         if (urlSessionId) {
           // Old flow - complete with URL params
           await completeQuiz(urlSessionId, urlUserId);
@@ -110,7 +113,8 @@ function AuthCompleteContent() {
     }
 
     processAuth();
-  }, [token, tokenType, searchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, tokenType, urlUserId, urlSessionId]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-neutral-50">
