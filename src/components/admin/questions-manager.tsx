@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, ChevronDown, ChevronUp, Upload, X, Loader2, ImageIcon, GripVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, ChevronDown, ChevronRight, Upload, X, Loader2, ImageIcon, GripVertical } from 'lucide-react';
 import { AnswerResultWiring } from './answer-result-wiring';
 import type { QuizResult, Question, Answer, AnswerResultWeight } from '@/types/database';
 import {
@@ -96,9 +96,9 @@ function SortableQuestionCard({
               onClick={onToggle}
             >
               {isExpanded ? (
-                <ChevronUp className="w-4 h-4 shrink-0" />
-              ) : (
                 <ChevronDown className="w-4 h-4 shrink-0" />
+              ) : (
+                <ChevronRight className="w-4 h-4 shrink-0" />
               )}
               <span className="text-muted-foreground shrink-0">Q{qIndex + 1}.</span>
               <span className="font-medium truncate">{question.question_text}</span>
