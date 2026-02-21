@@ -120,7 +120,7 @@ export function AdminSidebar(props: AdminSidebarProps) {
       </div>
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-64 shrink-0 flex-col">
+      <aside className="hidden md:flex w-64 shrink-0 flex-col sticky top-0 h-screen">
         <SidebarContent {...props} pathname={pathname} />
       </aside>
     </>
